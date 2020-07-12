@@ -1,4 +1,4 @@
-create external table hive.default.weather (
+create table weather_parquet (
 usaf int,
 wban int,
 datetime char(15),
@@ -22,15 +22,17 @@ year int,
 day int,
 version decimal
 )
-ROW FORMAT DELIMITED
-FIELDS TERMINATED BY ','
-STORED AS TEXTFILE
-location 'v3io://users/admin/data/weather_ecolab/weathercsv.csv';
+STORED AS parquet
+location 'v3io://users/admin/data/weather_parquet/';
 
 
-row format serde 'org.apache.hadoop.hive.serde2.OpenCSVSerde'
-with serdeproperties 
-(
-    "separatorChar" = ','
-)  
-STORED AS TEXTFILE
+Try Hive first
+// From hive
+insert overwrite table weather_parquet select * from weather limit 10;
+
+// From Presto
+// Create bigdata/user/hive/warehouse (default hive location)
+CREATE TABLE hive.default.w_parquet
+WITH (format = 'PARQUET', external_location='v3io://users/admin/data/w_parquet/')
+AS
+SELECT * from hive.default.weather
